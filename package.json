@@ -12,7 +12,8 @@
     "ejs": "^3.1.6",
     "express": "^4.17.1",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^5.10.9"
+    "mongoose": "^5.10.9",
+    "axios": "^0.21.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.4"
