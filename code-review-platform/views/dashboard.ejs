@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+  <h1>Welcome, <%= user.username %></h1>
+  <h2>Your Reviews</h2>
+  <ul>
+    <% reviews.forEach(review => { %>
+      <li><a href="/review/<%= review.roomId %>"><%= review.roomId %></a></li>
+    <% }) %>
+  </ul>
+  <form method="POST" action="/review/create">
+    <textarea name="code" placeholder="Paste your code here" required></textarea>
+    <button type="submit">Create Review</button>
+  </form>
+  <a href="/auth/logout">Logout</a>
+  <%- include('partials/footer') %>
+</body>
+</html>

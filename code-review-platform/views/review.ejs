@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Review <%= review.roomId %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+  <h1>Review Room: <%= review.roomId %></h1>
+  <pre><code><%= review.code %></code></pre>
+  <h2>AI Suggestions</h2>
+  <p><%= aiSuggestions %></p>
+  <h2>Comments</h2>
+  <div id="comments">
+    <% review.comments.forEach(comment => { %>
+      <p><strong><%= comment.user.username %>:</strong> <%= comment.text %> <em>(<%= comment.createdAt %>)</em></p>
+    <% }) %>
+  </div>
+  <input type="text" id="commentInput" placeholder="Add a comment">
+  <button onclick="sendComment()">Submit</button>
+  <script src="/js/client.js"></script>
+  <script>
+    const roomId = '<%= review.roomId %>';
+    const userId = '<%= user._id %>';
+    const username = '<%= user.username %>';
+  </script>
+  <%- include('partials/footer') %>
+</body>
+</html>
