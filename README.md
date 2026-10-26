@@ -9,7 +9,8 @@ An AI-assisted code review API built with Node.js, Express and MongoDB.
 - Responsive browser workspace for account registration/login, review creation/history, and AI-assisted code analysis.
 - User registration and login with scrypt password hashing for new registrations.
 - Short-lived JWT bearer tokens with issuer, audience and algorithm validation.
-- Review creation and listing scoped to the authenticated user.
+- Review creation, owner-scoped access, and review sharing with invited collaborators.
+- Authenticated WebSocket rooms for persisted live comments, presence updates, and immediate access revocation.
 - Optional AI-assisted review via an environment-configured provider.
 - Health and database-readiness endpoints, request size limits, security headers, graceful shutdown, and per-process rate limits for authentication and AI analysis.
 - GitHub Actions CI syntax checks, focused AI-service/rate-limit tests, dependency audit, and production-container build.
@@ -42,7 +43,10 @@ Open `http://127.0.0.1:3001`. Compose stores local MongoDB data in a named volum
 - `POST /api/auth/register` accepts `username` and `password` (minimum 12 characters).
 - `POST /api/auth/login` returns a short-lived bearer token.
 - `POST /api/review` creates a review for the authenticated user.
-- `GET /api/review` lists only the authenticated user's reviews.
+- `GET /api/review` lists reviews you own or have been invited to collaborate on.
+- `POST /api/review/:id/collaborators` invites an existing username (owner only).
+- `DELETE /api/review/:id/collaborators/:username` revokes access (owner only).
+- The browser opens a live room from a review card; WebSocket clients authenticate with their bearer token before receiving comments.
 - `POST /api/review/analyze` accepts `code` and requires `OPENAI_API_KEY`.
 
 ## Environment variables
@@ -67,7 +71,7 @@ npm test
 npm audit
 ```
 
-CI checks syntax and the focused AI validation cases; these are not substitutes for integration tests, penetration testing, or production smoke tests.
+CI checks JavaScript syntax, focused AI/auth/rate-limit/HTTP/WebSocket-auth tests, dependency audit, Compose configuration, and a production Docker build. These checks are not substitutes for database-backed integration tests, penetration testing, or production smoke tests.
 
 ## Security and release
 
@@ -75,9 +79,9 @@ Review [SECURITY.md](SECURITY.md) and the [production readiness checklist](docs/
 
 ## Known limitations
 
-- Real-time WebSocket collaboration is not yet integrated into the main HTTP server.
+- Live WebSocket collaboration is implemented for owners and invited collaborators, but end-to-end multi-user/database tests remain outstanding.
 - AI findings are returned as provider text and are not yet schema-validated into a typed issue model.
-- Comprehensive auth/review integration tests, rate limiting, abuse controls, and a tested deployment/restore procedure remain release blockers.
+- Comprehensive database-backed auth/review/collaboration tests, distributed rate limiting for multiple app instances, broader abuse controls, and a tested deployment/restore procedure remain release blockers.
 - No production deployment, penetration test, load test, or backup restore is claimed.
 
 ## License
