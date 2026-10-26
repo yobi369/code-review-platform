@@ -18,13 +18,25 @@ Legacy accounts created by the original version with plaintext passwords are upg
 
 ## Requirements and local setup
 
-Requires Node.js 20.19+ and a reachable MongoDB instance.
+Requires Node.js 20.19+ and a reachable MongoDB instance. For a containerized local setup, Docker Engine and the Docker Compose plugin are also supported.
 
 ```bash
 npm ci
 cp .env.example .env
 # Set a strong unique JWT_SECRET and your DATABASE_URL
 npm start
+```
+
+### Run with Docker Compose
+
+```bash
+cp .env.example .env
+# Edit .env and replace JWT_SECRET with a unique random value of at least 32 characters.
+docker compose up --build
+```
+
+Open `http://127.0.0.1:3001`. Compose stores local MongoDB data in a named volume and binds the web port to loopback only. AI analysis remains disabled until `OPENAI_API_KEY` is set. This is a local development setup, not a managed production deployment. Stop with `docker compose down`; use `docker compose down -v` only if you intentionally want to delete the local database volume.
+
 ```
 
 - `GET /health` reports process health.
