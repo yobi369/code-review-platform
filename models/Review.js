@@ -15,4 +15,5 @@ const ReviewSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now, index: true }
 }, { timestamps: false, versionKey: false });
 ReviewSchema.index({ owner: 1, createdAt: -1 });
+ReviewSchema.index({ collaborators: 1, createdAt: -1 });
 module.exports = mongoose.model('Review', ReviewSchema);
