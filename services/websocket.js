@@ -119,10 +119,11 @@ function attachWebSocket(server) {
         const reviewExists = await Review.exists({ _id: state.reviewId, $or: [{ owner: state.userId }, { collaborators: state.userId }] });
         if (!reviewExists) return socket.close(1008, 'Review access denied');
         const comment = { user: state.userId, username: state.username, text, createdAt: new Date() };
-        await Review.updateOne(
+        const update = await Review.updateOne(
           { _id: state.reviewId, $or: [{ owner: state.userId }, { collaborators: state.userId }] },
           { $push: { comments: { $each: [comment], $slice: -100 } } }
         );
+        if (!update.matchedCount) return socket.close(1008, 'Review access denied');
         broadcast(wss, state.reviewId, {
           type: 'comment',
           comment: { username: state.username, text, createdAt: comment.createdAt.toISOString() }
