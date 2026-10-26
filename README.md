@@ -10,7 +10,7 @@ An AI-assisted code review API built with Node.js, Express and MongoDB.
 - Short-lived JWT bearer tokens with issuer, audience and algorithm validation.
 - Review creation and listing scoped to the authenticated user.
 - Optional AI-assisted review via an environment-configured provider.
-- Health and database-readiness endpoints, request size limits, security headers, and graceful shutdown.
+- Health and database-readiness endpoints, request size limits, security headers, graceful shutdown, and per-process rate limits for authentication and AI analysis.
 - GitHub Actions CI syntax checks and focused AI-service tests.
 
 Legacy accounts created by the original version with plaintext passwords are upgraded to scrypt hashes after a successful login. This compatibility path should be treated as temporary and existing account data should be backed up before release.
