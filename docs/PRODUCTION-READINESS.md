@@ -15,11 +15,11 @@ This is a release gate and records work still required; it does not claim that u
 
 ## Required before production
 
-- [ ] Ensure the latest GitHub Actions run is green, including full dependency audit and Docker build.
+- [ ] Ensure the latest GitHub Actions run is green, including full dependency audit, Compose validation, and Docker build.
 - [ ] Rotate all real credentials ever committed; review Git history and coordinate any required history rewrite.
 - [x] Remove tracked `node_modules` from the upgrade branch and remove the duplicate nested application tree; retain the root app as the canonical entrypoint.
 - [x] Upgrade Express/Mongoose and refresh the lockfile; a clean install, full audit, tests, and Docker build must still pass in CI.
-- [ ] Test auth registration/login, legacy password migration, token expiry, review ownership isolation, duplicate usernames, and database errors against a disposable test database.
+- [ ] Test auth registration/login, legacy password migration, token expiry, review ownership isolation, duplicate usernames, and database errors against a disposable test database. Existing legacy review records without an owner cannot safely be assigned automatically; back up and explicitly migrate them if they contain data that must be retained.
 - [x] Add bounded per-process rate limits to authentication and AI routes; [ ] replace the in-memory store with a shared store before horizontally scaling.
 - [ ] Configure CORS allowlists and CSRF protections if cookie-based authentication is introduced.
 - [ ] Validate provider output into a strict JSON schema; handle provider rate limits, retries, quotas, and cost controls.
