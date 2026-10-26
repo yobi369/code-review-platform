@@ -1,30 +1,34 @@
 # Production Readiness Checklist
 
-This is a practical release gate, not a claim that the application has passed these checks.
+This is a release gate and records work still required; it does not claim that unperformed checks have passed.
 
-## Implemented in this hardening branch
+## Implemented on the hardening branch
 
 - [x] Ignore local environment files and generated dependencies in future commits.
-- [x] Provide a safe environment-variable template.
-- [x] Add basic HTTP security headers, bounded JSON/form payloads, health/readiness endpoints, and graceful shutdown.
-- [x] Remove the hard-coded AI provider placeholder and fail clearly when AI is not configured.
-- [x] Add CI syntax checks.
+- [x] Add a safe environment template, setup documentation, and security reporting policy.
+- [x] Add bounded HTTP body parsing, baseline response security headers, health/readiness endpoints, and graceful shutdown.
+- [x] Configure AI credentials through environment variables, enforce code-size limits, and set a provider timeout.
+- [x] Add scrypt password hashing for new accounts and migrate legacy plaintext passwords after successful login.
+- [x] Validate JWT bearer tokens, issuer, audience, expiry, and signing algorithm.
+- [x] Scope review creation/listing to the authenticated owner.
+- [x] Add focused AI input/configuration tests and CI checks.
 
-## Required before real users or production data
+## Required before production
 
-- [ ] Rotate credentials previously committed and review Git history; purge history only with a coordinated rewrite if required.
-- [ ] Remove tracked `.env` files from every legacy folder and confirm `.gitignore` is effective.
-- [ ] Upgrade and pin the outdated dependency stack; resolve `npm audit` findings.
-- [ ] Add automated tests for registration/login, password hashing, token expiry, authorization, validation, and review ownership.
-- [ ] Verify passwords use a modern password hash (Argon2id or bcrypt) and rate-limit authentication endpoints.
-- [ ] Enforce review ownership/tenant boundaries and safe error responses.
-- [ ] Configure CORS allowlists, CSRF protection if cookie auth is used, and trusted proxy settings appropriate to the host.
-- [ ] Add database indexes, least-privilege credentials, TLS, backups, and a tested restore procedure.
-- [ ] Validate AI response schemas, timeouts, token/cost limits, prompt-injection handling, and data-retention policy.
-- [ ] Add structured redacted logging, monitoring, alerting, and abuse/rate controls.
-- [ ] Run dependency, SAST, DAST, accessibility, load, and end-to-end tests against a staging deployment.
-- [ ] Verify production deployment URL, HTTPS, health checks, rollback, and incident-response ownership.
+- [ ] Ensure the latest GitHub Actions run is green and inspect any audit findings.
+- [ ] Rotate all real credentials ever committed; review Git history and coordinate any required history rewrite.
+- [ ] Remove tracked `node_modules` and duplicate legacy application directories; identify one canonical app entrypoint.
+- [ ] Upgrade outdated Express/Mongoose and transitive dependencies; regenerate and commit a clean lockfile, then run a clean install and audit.
+- [ ] Test auth registration/login, legacy password migration, token expiry, review ownership isolation, duplicate usernames, and database errors against a disposable test database.
+- [ ] Add rate limiting and abuse protection to authentication and AI routes.
+- [ ] Configure CORS allowlists and CSRF protections if cookie-based authentication is introduced.
+- [ ] Validate provider output into a strict JSON schema; handle provider rate limits, retries, quotas, and cost controls.
+- [ ] Add a documented privacy/retention policy for source code sent to an external provider.
+- [ ] Integrate authenticated WebSocket collaboration into the main server or clearly remove the feature claim.
+- [ ] Configure database TLS, least-privilege credentials, backups, and successfully test a restore.
+- [ ] Run staging smoke tests, accessibility checks, dependency scanning, SAST/DAST, load testing, and an independent security review.
+- [ ] Verify HTTPS deployment, monitoring, alerts, rollback, and incident-response ownership.
 
 ## Known limitations
 
-The repository contains duplicated root and nested application files, an old dependency stack, and committed environment files in its existing history. CI syntax checks are not a substitute for functional/security testing. No live deployment, external penetration test, backup restore, or load test is claimed by this document.
+The current app is a hardening baseline, not yet production-ready. Legacy plaintext password compatibility remains until each existing user logs in. Existing historical credentials may remain in Git history even after current-tree environment files are removed. The repository has duplicate app directories and committed dependencies, and the real-time WebSocket service is not connected to the HTTP app. No live deployment, penetration test, load test, or backup restore is claimed.
