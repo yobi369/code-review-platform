@@ -15,11 +15,12 @@ This is a release gate and records work still required; it does not claim that u
 
 ## Required before production
 
-- [x] CI passed for commit `dbad5ab083663c07c1d185602b4341e5c64d9b2a`: clean install, JavaScript syntax checks, automated tests, full high-severity dependency audit, Compose validation, and production Docker build. Re-run CI after subsequent changes.
+- [x] CI passed for commit `33ee39e4aa33cd9c9ed7254ba30f1d2590dbb18e`: clean install, syntax checks, automated tests, MongoDB-backed collaboration integration tests, full high-severity dependency audit, Compose validation, and production Docker build. Re-run CI after subsequent changes.
 - [ ] Rotate all real credentials ever committed; review Git history and coordinate any required history rewrite.
 - [x] Remove tracked `node_modules` from the upgrade branch and remove the duplicate nested application tree; retain the root app as the canonical entrypoint.
 - [x] Upgrade Express/Mongoose and refresh the lockfile; clean install and full dependency audit passed in CI.
-- [ ] Test auth registration/login, legacy password migration, token expiry, review ownership isolation, collaborator invite/revoke, live comment persistence/broadcast, duplicate usernames, and database errors against a disposable test database. Existing legacy review records without an owner cannot safely be assigned automatically; back up and explicitly migrate them if they contain data that must be retained.
+- [x] Verify registration/login, review privacy before invitation, collaborator invitation, live comment persistence/broadcast, collaborator revocation, and denial of revoked reconnects against a disposable MongoDB service in CI.
+- [ ] Add cases for legacy plaintext-password migration, duplicate usernames, database failure paths, WebSocket reconnect/chaos, and broader permission edge cases. Existing legacy review records without an owner cannot safely be assigned automatically; back up and explicitly migrate them if they contain data that must be retained.
 - [x] Add bounded per-process rate limits to authentication and AI routes; [ ] replace the in-memory store with a shared store before horizontally scaling.
 - [ ] Configure CORS allowlists and CSRF protections if cookie-based authentication is introduced.
 - [ ] Validate provider output into a strict JSON schema; handle provider rate limits, retries, quotas, and cost controls.
@@ -31,4 +32,4 @@ This is a release gate and records work still required; it does not claim that u
 
 ## Known limitations
 
-The current app is a hardening baseline, not yet production-ready. Legacy plaintext password compatibility remains until each existing user logs in. Legacy review records created before ownership fields existed are hidden by the new owner-scoped query; back up and explicitly migrate any records that must be retained. Existing historical credentials may remain in Git history even after current-tree environment files are removed. The current tree is consolidated and the real-time WebSocket service is attached to the HTTP server. Multi-user collaboration still needs database-backed end-to-end verification. No live deployment, penetration test, load test, or backup restore is claimed.
+The current app is a hardening baseline, not yet production-ready. Legacy plaintext password compatibility remains until each existing user logs in. Legacy review records created before ownership fields existed are hidden by the new owner-scoped query; back up and explicitly migrate any records that must be retained. Existing historical credentials may remain in Git history even after current-tree environment files are removed. The current tree is consolidated and the real-time WebSocket service is attached to the HTTP server. The main multi-user collaboration flow passes a MongoDB-backed CI integration suite; load, chaos, and production-environment verification remain outstanding. No live deployment, penetration test, load test, or backup restore is claimed.
