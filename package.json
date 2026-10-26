@@ -1,23 +1,27 @@
 {
   "name": "code-review-platform",
-  "version": "1.0.0",
-  "description": "Real-Time Collaborative AI-Powered Code Review Platform",
+  "version": "1.1.0",
+  "description": "AI-assisted code review platform built with Node.js, Express and MongoDB",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "check": "node --check app.js && node --check controllers/auth.js && node --check controllers/review.js && node --check middleware/auth.js && node --check services/ai.js && node --check config/db.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "dependencies": {
     "dotenv": "^8.2.0",
     "ejs": "^3.1.6",
     "express": "^4.17.1",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^5.10.9",
-    "axios": "^0.21.1"
+    "mongoose": "^5.10.9"
   },
   "devDependencies": {
     "nodemon": "^2.0.4"
   },
-  "author": "Your Name",
+  "author": "Brian Mutunga",
   "license": "ISC"
 }
