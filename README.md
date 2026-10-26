@@ -1,53 +1,74 @@
 # Code Review Platform
 
-A Node.js/Express and MongoDB starter for authenticated code reviews, with optional AI-assisted analysis and real-time collaboration components.
+An AI-assisted code review API built with Node.js, Express and MongoDB.
 
-> **Status:** hardening in progress. This repository is not production-ready until the checks in `docs/PRODUCTION-READINESS.md` are completed. AI output is advisory and must be reviewed by a human.
+> **Status:** hardening in progress. Do not use for production or confidential source code until the remaining release gates in [docs/PRODUCTION-READINESS.md](docs/PRODUCTION-READINESS.md) are completed. AI findings are advisory and require human review.
 
-## Features
+## Current capabilities
 
-- Express API for registration, login, and review workflows.
-- MongoDB persistence through Mongoose.
-- Optional AI analysis via an environment-configured provider; no API key is embedded in source.
-- Health/readiness endpoints, bounded request bodies, baseline security headers, and graceful shutdown.
-- GitHub Actions syntax checks on pushes and pull requests.
+- User registration and login with scrypt password hashing for new registrations.
+- Short-lived JWT bearer tokens with issuer, audience and algorithm validation.
+- Review creation and listing scoped to the authenticated user.
+- Optional AI-assisted review via an environment-configured provider.
+- Health and database-readiness endpoints, request size limits, security headers, and graceful shutdown.
+- GitHub Actions CI syntax checks and focused AI-service tests.
 
-## Requirements
+Legacy accounts created by the original version with plaintext passwords are upgraded to scrypt hashes after a successful login. This compatibility path should be treated as temporary and existing account data should be backed up before release.
 
-- Node.js 20 or newer
-- npm
-- MongoDB instance reachable through `DATABASE_URL`
+## Requirements and local setup
 
-## Local setup
+Requires Node.js 20+ and a reachable MongoDB instance.
 
 ```bash
 npm ci
 cp .env.example .env
-# Edit .env and set a unique JWT_SECRET and your MongoDB URL
+# Set a strong unique JWT_SECRET and your DATABASE_URL
 npm start
 ```
 
-The service listens on `PORT` (default `3001`). Check `GET /health` for process health and `GET /ready` for database readiness. Never use the example JWT secret outside local development.
+- `GET /health` reports process health.
+- `GET /ready` returns HTTP 200 only when MongoDB is connected.
+- `POST /api/auth/register` accepts `username` and `password` (minimum 12 characters).
+- `POST /api/auth/login` returns a short-lived bearer token.
+- `POST /api/review` creates a review for the authenticated user.
+- `GET /api/review` lists only the authenticated user's reviews.
+- `POST /api/review/analyze` accepts `code` and requires `OPENAI_API_KEY`.
 
 ## Environment variables
 
 | Variable | Required | Purpose |
-|---|---|---|
-| `PORT` | No | HTTP port (defaults to 3001) |
-| `NODE_ENV` | No | Set `production` in deployment |
+| --- | --- | --- |
+| `PORT` | No | HTTP port, default 3001 |
+| `NODE_ENV` | No | Use `production` in deployment |
 | `DATABASE_URL` | Yes | MongoDB connection string |
-| `JWT_SECRET` | Yes for auth | Long, random signing secret; keep it out of Git |
-| `OPENAI_API_KEY` | No | Enables provider-backed AI analysis |
-| `OPENAI_MODEL` | No | Model name supported by your account/provider |
+| `JWT_SECRET` | Yes for authentication | Unique random secret, at least 32 characters |
+| `OPENAI_API_KEY` | No | Enables AI analysis |
+| `OPENAI_MODEL` | No | Provider model, defaults to `gpt-4.1-mini` |
 
-## Security and deployment
+Never commit real environment files or use example secrets in a deployed environment. Do not send proprietary code to an external AI provider unless you are authorized to do so.
 
-Read [`SECURITY.md`](SECURITY.md) and [`docs/PRODUCTION-READINESS.md`](docs/PRODUCTION-READINESS.md). Configure GitHub secret scanning, push protection, Dependabot alerts, and code scanning in repository settings. Rotate any credential that has ever been committed; deleting a file does not erase it from Git history. Use a managed MongoDB deployment with authentication, TLS, backups, and least-privilege credentials. Do not submit secrets or proprietary code to an AI provider unless you are authorized to do so.
+## Validation
 
-## Development notes
+```bash
+npm ci
+npm run check
+npm test
+npm audit
+```
 
-This project currently uses an older dependency stack and contains duplicated legacy folders. Review and consolidate those deliberately rather than assuming both copies are deployed. Run `npm audit` and test authentication, authorization, data isolation, and provider failure behavior before production use.
+CI checks syntax and the focused AI validation cases; these are not substitutes for integration tests, penetration testing, or production smoke tests.
+
+## Security and release
+
+Review [SECURITY.md](SECURITY.md) and the [production readiness checklist](docs/PRODUCTION-READINESS.md). The codebase has legacy duplicate directories and a dated dependency stack that still require cleanup and upgrades. Existing Git history may contain environment files; rotate any real credentials that may have been exposed and assess history cleanup separately. Configure secret scanning, push protection, Dependabot, database TLS, least-privilege access, backups, and tested restore procedures before handling real users' data.
+
+## Known limitations
+
+- Real-time WebSocket collaboration is not yet integrated into the main HTTP server.
+- AI findings are returned as provider text and are not yet schema-validated into a typed issue model.
+- Comprehensive auth/review integration tests, rate limiting, abuse controls, and a tested deployment/restore procedure remain release blockers.
+- No production deployment, penetration test, load test, or backup restore is claimed.
 
 ## License
 
-No license is currently declared for this repository. Add an explicit license before accepting external contributions or granting reuse rights.
+No license has been selected for this repository yet. Add one explicitly before inviting external contributions or granting reuse rights.
