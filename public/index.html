@@ -74,6 +74,11 @@
         <div class="panel-heading"><div><p class="kicker">03 / TRACK</p><h3 id="history-title">Recent review sessions</h3><p class="muted">Only sessions belonging to your account are shown.</p></div><button id="refresh-reviews" class="button secondary" type="button">Refresh ↻</button></div>
         <div id="review-list" class="review-list"><p class="empty-state">Sign in to load your review history.</p></div>
       </section>
+      <section id="collab-panel" class="panel collab-panel hidden" aria-labelledby="collab-review-title">
+        <div class="panel-heading"><div><p class="kicker">04 / COLLABORATE</p><h3 id="collab-review-title">Live review room</h3><p id="collab-status" class="muted" role="status">Not connected</p></div><button id="close-collab" class="button secondary" type="button">Close room</button></div>
+        <div id="comment-list" class="comment-list" role="log" aria-live="polite" aria-relevant="additions text"><p class="empty-state">Open a review room to load its comments.</p></div>
+        <form id="comment-form" class="comment-form"><label for="comment-input">Add a comment</label><textarea id="comment-input" maxlength="2000" rows="2" placeholder="Share a finding or ask a question…" required></textarea><div class="field-row"><p class="field-help">Comments are shared with authenticated members who can access this review.</p><button id="send-comment" class="button primary" type="submit" disabled>Send comment →</button></div></form>
+      </section>
       <p id="workspace-message" class="message" role="status" aria-live="polite"></p>
     </section>
     <footer class="page-footer"><span>REVIEWFORGE · CODE REVIEW PLATFORM</span><span>AI-assisted, human-approved.</span></footer>
