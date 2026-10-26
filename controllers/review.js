@@ -19,7 +19,7 @@ exports.createReview = async (req, res) => {
 };
 exports.getReviews = async (req, res) => {
   try {
-    const reviews = await Review.find({ $or: [{ owner: req.userId }, { collaborators: req.userId }] }).sort({ createdAt: -1 }).limit(100).lean();
+    const reviews = await Review.find({ $or: [{ owner: req.userId }, { collaborators: req.userId }] }).select('title description owner createdAt').sort({ createdAt: -1 }).limit(100).lean();
     return res.status(200).json(reviews);
   } catch (error) {
     console.error('Review listing failed:', error && error.message);
