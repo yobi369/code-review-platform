@@ -33,6 +33,7 @@ function attachWebSocket(server) {
       messageCount: 0
     };
     socket.reviewState = state;
+    let tokenExpiryTimer;
     const authTimer = setTimeout(() => {
       if (!state.authenticated && socket.readyState === WebSocket.OPEN) socket.close(1008, 'Authentication timeout');
     }, AUTH_TIMEOUT_MS);
@@ -77,6 +78,12 @@ function attachWebSocket(server) {
           state.username = user.username;
           state.reviewId = String(message.reviewId);
           clearTimeout(authTimer);
+          if (Number.isFinite(decoded.exp)) {
+            const remaining = decoded.exp * 1000 - Date.now();
+            if (remaining <= 0) return socket.close(1008, 'Token expired');
+            tokenExpiryTimer = setTimeout(() => socket.close(1008, 'Token expired'), remaining);
+            tokenExpiryTimer.unref();
+          }
           socket.send(JSON.stringify({
             type: 'authenticated',
             reviewId: state.reviewId,
@@ -126,6 +133,7 @@ function attachWebSocket(server) {
 
     socket.on('close', () => {
       clearTimeout(authTimer);
+      if (tokenExpiryTimer) clearTimeout(tokenExpiryTimer);
       if (state.authenticated) broadcast(wss, state.reviewId, { type: 'presence', username: state.username, state: 'left' }, socket);
     });
     socket.on('error', (error) => console.warn('WebSocket connection error:', error.message));
