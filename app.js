@@ -34,7 +34,7 @@ app.get('/ready', (_req, res) => {
   const ready = mongoose.connection.readyState === 1;
   res.status(ready ? 200 : 503).json({ status: ready ? 'ready' : 'not_ready', database: ready ? 'connected' : 'disconnected' });
 });
-app.get('/', (_req, res) => res.json({ name: 'Code Review Platform API', status: 'running', health: '/health', readiness: '/ready' }));
+app.get('/', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/review', reviewRoutes);
