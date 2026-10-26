@@ -49,7 +49,7 @@ exports.login = async (req, res) => {
   const username = req.body && typeof req.body.username === 'string' ? req.body.username.trim() : '';
   const password = req.body && req.body.password;
   if (typeof password !== 'string' || !username || password.length > 256) return res.status(400).json({ error: 'Username and password are required' });
-  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32 || process.env.JWT_SECRET === 'your_jwt_secret') {
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32 || process.env.JWT_SECRET === 'your_jwt_secret' || process.env.JWT_SECRET === 'replace-with-a-long-random-secret-at-least-32-characters') {
     return res.status(503).json({ error: 'Authentication is not configured securely on this server' });
   }
   try {
