@@ -47,3 +47,22 @@ exports.addCollaborator = async (req, res) => {
     return res.status(500).json({ error: 'Could not add collaborator' });
   }
 };
+
+exports.removeCollaborator = async (req, res) => {
+  const reviewId = req.params.id;
+  const username = typeof req.params.username === 'string' ? req.params.username.trim() : '';
+  if (!mongoose.isValidObjectId(reviewId)) return res.status(400).json({ error: 'Invalid review id' });
+  try {
+    const collaborator = await User.findOne({ username }).select('_id').lean();
+    if (!collaborator) return res.status(404).json({ error: 'Collaborator account not found' });
+    const result = await Review.updateOne(
+      { _id: reviewId, owner: req.userId },
+      { $pull: { collaborators: collaborator._id } }
+    );
+    if (!result.matchedCount) return res.status(404).json({ error: 'Review not found or you are not its owner' });
+    return res.status(200).json({ message: 'Collaborator access revoked' });
+  } catch (error) {
+    console.error('Removing collaborator failed:', error && error.message);
+    return res.status(500).json({ error: 'Could not remove collaborator' });
+  }
+};
