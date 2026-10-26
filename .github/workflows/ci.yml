@@ -30,3 +30,33 @@ jobs:
         run: JWT_SECRET=ci-test-secret-with-more-than-32-characters docker compose config --quiet
       - name: Build production container
         run: docker build --tag code-review-platform:ci .
+
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      mongo:
+        image: mongo:8
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+          --health-start-period 10s
+    env:
+      NODE_ENV: test
+      PORT: "3001"
+      DATABASE_URL: mongodb://127.0.0.1:27017/code-review-platform-test
+      JWT_SECRET: ci-integration-secret-that-is-longer-than-thirty-two-characters
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Run database-backed collaboration integration tests
+        run: npm run test:integration
