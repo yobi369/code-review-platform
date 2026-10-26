@@ -71,7 +71,7 @@ npm test
 npm audit
 ```
 
-CI checks JavaScript syntax, focused AI/auth/rate-limit/HTTP/WebSocket-auth tests, dependency audit, Compose configuration, and a production Docker build. These checks are not substitutes for database-backed integration tests, penetration testing, or production smoke tests.
+CI checks JavaScript syntax, focused AI/auth/rate-limit/HTTP/WebSocket-auth tests, MongoDB-backed registration/review/collaboration integration tests, a full dependency audit, Compose configuration, and a production Docker build. These checks are not substitutes for penetration testing, load testing, or production smoke tests.
 
 ## Security and release
 
