@@ -9,6 +9,7 @@ const { analyzeCode } = require('../services/ai');
 const analysisLimiter = createRateLimiter({ windowMs: 60 * 1000, max: 5, message: 'AI analysis rate limit reached. Try again later.' });
 router.post('/', authenticate, reviewController.createReview);
 router.post('/:id/collaborators', authenticate, createRateLimiter({ windowMs: 60 * 60 * 1000, max: 10, message: 'Collaborator invite limit reached.' }), reviewController.addCollaborator);
+router.delete('/:id/collaborators/:username', authenticate, createRateLimiter({ windowMs: 60 * 60 * 1000, max: 20, message: 'Collaborator management rate limit reached.' }), reviewController.removeCollaborator);
 router.post('/analyze', authenticate, analysisLimiter, async (req, res) => {
   try {
     const result = await analyzeCode(req.body && req.body.code);
