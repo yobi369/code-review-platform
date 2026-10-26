@@ -293,6 +293,22 @@
       message(workspaceMessage, error.message, true);
     }
   });
+
+  $('#remove-collaborator-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!activeReviewId) return message(workspaceMessage, 'Open a review room first.', true);
+    const username = $('#remove-username').value.trim();
+    const button = event.currentTarget.querySelector('button[type="submit"]');
+    try {
+      await withBusy(button, async () => {
+        await api('/api/review/' + encodeURIComponent(activeReviewId) + '/collaborators/' + encodeURIComponent(username), { method: 'DELETE' });
+        $('#remove-collaborator-form').reset();
+        message(workspaceMessage, 'Access revoked for ' + username + '.');
+      }, 'Revoking…');
+    } catch (error) {
+      message(workspaceMessage, error.message, true);
+    }
+  });
   $('#close-collab').addEventListener('click', () => {
     if (activeSocket) { activeSocket.close(1000, 'Room closed'); activeSocket = null; }
     activeReviewId = null;
