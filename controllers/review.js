@@ -2,6 +2,7 @@
 const mongoose = require('mongoose');
 const Review = require('../models/Review');
 const User = require('../models/User');
+const webSocketService = require('../services/websocket');
 exports.createReview = async (req, res) => {
   const body = req.body || {};
   const title = typeof body.title === 'string' ? body.title.trim() : '';
@@ -60,6 +61,7 @@ exports.removeCollaborator = async (req, res) => {
       { $pull: { collaborators: collaborator._id } }
     );
     if (!result.matchedCount) return res.status(404).json({ error: 'Review not found or you are not its owner' });
+    webSocketService.revokeUserAccess(reviewId, collaborator._id);
     return res.status(200).json({ message: 'Collaborator access revoked' });
   } catch (error) {
     console.error('Removing collaborator failed:', error && error.message);
