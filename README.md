@@ -37,8 +37,6 @@ docker compose up --build
 
 Open `http://127.0.0.1:3001`. Compose stores local MongoDB data in a named volume and binds the web port to loopback only. AI analysis remains disabled until `OPENAI_API_KEY` is set. This is a local development setup, not a managed production deployment. Stop with `docker compose down`; use `docker compose down -v` only if you intentionally want to delete the local database volume.
 
-```
-
 - `GET /health` reports process health.
 - `GET /ready` returns HTTP 200 only when MongoDB is connected.
 - `POST /api/auth/register` accepts `username` and `password` (minimum 12 characters).
