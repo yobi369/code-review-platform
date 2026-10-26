@@ -80,6 +80,25 @@ function waitForMessage(socket, type, timeoutMs = 8000) {
     socket.on('message', onMessage);
   });
 }
+function expectRoomDenied(token, id) {
+  return new Promise((resolve, reject) => {
+    const socket = new WebSocket(baseUrl.replace(/^http/, 'ws') + '/ws');
+    sockets.push(socket);
+    const timer = setTimeout(() => reject(new Error('Expected WebSocket access denial timed out')), 8000);
+    socket.once('error', (error) => { clearTimeout(timer); reject(error); });
+    socket.once('close', (code) => { clearTimeout(timer); resolve(code); });
+    socket.once('open', () => socket.send(JSON.stringify({ type: 'authenticate', token, reviewId: id })));
+    socket.on('message', (raw) => {
+      let payload;
+      try { payload = JSON.parse(raw.toString()); } catch { return; }
+      if (payload.type === 'authenticated') {
+        clearTimeout(timer);
+        socket.terminate();
+        reject(new Error('Revoked collaborator was incorrectly authenticated'));
+      }
+    });
+  });
+}
 function waitForClose(socket, timeoutMs = 8000) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('WebSocket close timed out')), timeoutMs);
@@ -145,8 +164,7 @@ async function main() {
     const afterRevoke = await request('/api/review', {}, collaboratorToken);
     assert.ok(!afterRevoke.body.some((item) => String(item._id) === reviewId), 'revoked collaborator should lose review access');
 
-    const deniedRoom = await connectRoom(ownerToken, reviewId);
-    deniedRoom.socket.close(1000, 'Test complete');
+    assert.equal(await expectRoomDenied(collaboratorToken, reviewId), 1008, 'revoked collaborator must not reconnect');
     console.log('Integration tests passed: authentication, review isolation, invitation, live comment persistence/broadcast, and access revocation.');
   } finally {
     for (const socket of sockets) {
