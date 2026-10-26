@@ -17,7 +17,7 @@ This is a release gate and records work still required; it does not claim that u
 
 - [ ] Ensure the latest GitHub Actions run is green and inspect any audit findings.
 - [ ] Rotate all real credentials ever committed; review Git history and coordinate any required history rewrite.
-- [ ] Remove tracked `node_modules` and duplicate legacy application directories; identify one canonical app entrypoint.
+- [x] Remove tracked `node_modules` from the upgrade branch and remove the duplicate nested application tree; retain the root app as the canonical entrypoint.
 - [ ] Upgrade outdated Express/Mongoose and transitive dependencies; regenerate and commit a clean lockfile, then run a clean install and audit.
 - [ ] Test auth registration/login, legacy password migration, token expiry, review ownership isolation, duplicate usernames, and database errors against a disposable test database.
 - [ ] Add rate limiting and abuse protection to authentication and AI routes.
