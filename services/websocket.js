@@ -54,7 +54,7 @@ function attachWebSocket(server) {
             return socket.close(1008, 'Authenticate before sending messages');
           }
           const secret = process.env.JWT_SECRET;
-          if (!secret || secret.length < 32 || secret === 'your_jwt_secret' || !mongoose.isValidObjectId(message.reviewId)) {
+          if (!secret || secret.length < 32 || secret === 'your_jwt_secret' || secret === 'replace-with-a-long-random-secret-at-least-32-characters' || !mongoose.isValidObjectId(message.reviewId)) {
             return socket.close(1008, 'Invalid authentication');
           }
           let decoded;
