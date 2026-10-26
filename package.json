@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "check": "node --check app.js && node --check controllers/auth.js && node --check controllers/review.js && node --check middleware/auth.js && node --check middleware/rateLimit.js && node --check routes/auth.js && node --check routes/review.js && node --check services/ai.js && node --check config/db.js && node --check public/js/app.js",
+    "check": "node --check app.js && node --check controllers/auth.js && node --check controllers/review.js && node --check middleware/auth.js && node --check middleware/rateLimit.js && node --check routes/auth.js && node --check routes/review.js && node --check services/ai.js && node --check services/websocket.js && node --check config/db.js && node --check public/js/app.js",
     "test": "node --test",
     "audit": "npm audit --audit-level=high",
     "check:security": "npm audit --audit-level=high"
