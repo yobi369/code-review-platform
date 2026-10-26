@@ -246,6 +246,9 @@
         appendComment(payload.comment);
       } else if (payload.type === 'presence') {
         $('#collab-status').textContent = payload.state === 'joined' ? 'Connected · ' + payload.username + ' joined' : 'Connected · ' + payload.username + ' left';
+      } else if (payload.type === 'access_revoked') {
+        $('#collab-status').textContent = 'Your access to this review has been revoked.';
+        socket.close(1008, 'Access revoked');
       } else if (payload.type === 'error') {
         message(workspaceMessage, payload.error || 'Collaboration error', true);
       }
