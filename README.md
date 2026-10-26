@@ -11,13 +11,13 @@ An AI-assisted code review API built with Node.js, Express and MongoDB.
 - Review creation and listing scoped to the authenticated user.
 - Optional AI-assisted review via an environment-configured provider.
 - Health and database-readiness endpoints, request size limits, security headers, graceful shutdown, and per-process rate limits for authentication and AI analysis.
-- GitHub Actions CI syntax checks and focused AI-service tests.
+- GitHub Actions CI syntax checks, focused AI-service/rate-limit tests, dependency audit, and production-container build.
 
 Legacy accounts created by the original version with plaintext passwords are upgraded to scrypt hashes after a successful login. This compatibility path should be treated as temporary and existing account data should be backed up before release.
 
 ## Requirements and local setup
 
-Requires Node.js 20+ and a reachable MongoDB instance.
+Requires Node.js 20.19+ and a reachable MongoDB instance.
 
 ```bash
 npm ci
@@ -60,7 +60,7 @@ CI checks syntax and the focused AI validation cases; these are not substitutes 
 
 ## Security and release
 
-Review [SECURITY.md](SECURITY.md) and the [production readiness checklist](docs/PRODUCTION-READINESS.md). The dependency stack remains dated and still requires upgrades and a full audit. Existing Git history may contain environment files; rotate any real credentials that may have been exposed and assess history cleanup separately. Configure secret scanning, push protection, Dependabot, database TLS, least-privilege access, backups, and tested restore procedures before handling real users' data.
+Review [SECURITY.md](SECURITY.md) and the [production readiness checklist](docs/PRODUCTION-READINESS.md). Express and Mongoose have been upgraded and the lockfile regenerated; CI now runs a full dependency audit. Review the current CI result before considering the dependency upgrade verified. Existing Git history may contain environment files; rotate any real credentials that may have been exposed and assess history cleanup separately. Configure secret scanning, push protection, Dependabot, database TLS, least-privilege access, backups, and tested restore procedures before handling real users' data.
 
 ## Known limitations
 
