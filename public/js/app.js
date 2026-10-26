@@ -9,6 +9,9 @@
   const workspaceMessage = $('#workspace-message');
   const tokenKey = 'reviewforge_session_token';
   const token = () => sessionStorage.getItem(tokenKey);
+  let activeSocket = null;
+  let activeReviewId = null;
+  let socketAuthenticated = false;
 
   function message(element, text, isError = false) {
     element.textContent = text || '';
@@ -48,6 +51,11 @@
     loadReviews();
   }
   function signOut(showMessage = true) {
+    if (activeSocket) { activeSocket.close(1000, 'Signed out'); activeSocket = null; }
+    activeReviewId = null;
+    socketAuthenticated = false;
+    $('#collab-panel').classList.add('hidden');
+    $('#send-comment').disabled = true;
     sessionStorage.removeItem(tokenKey);
     workspace.classList.add('hidden');
     authPanel.classList.remove('hidden');
@@ -155,7 +163,16 @@
         const parsed = new Date(review.createdAt);
         date.dateTime = Number.isNaN(parsed.getTime()) ? '' : parsed.toISOString();
         date.textContent = Number.isNaN(parsed.getTime()) ? '' : parsed.toLocaleDateString();
-        item.append(main, date);
+        const actions = document.createElement('div');
+        actions.className = 'review-actions';
+        const openRoom = document.createElement('button');
+        openRoom.type = 'button';
+        openRoom.className = 'button secondary open-room';
+        openRoom.textContent = 'Open live room →';
+        openRoom.setAttribute('aria-label', 'Open live room for ' + (review.title || 'review'));
+        openRoom.addEventListener('click', () => openCollaboration(review));
+        actions.append(openRoom);
+        item.append(main, date, actions);
         list.append(item);
       }
     } catch (error) {
@@ -167,6 +184,103 @@
     }
   }
 
+
+  function appendComment(comment) {
+    const list = $('#comment-list');
+    const empty = list.querySelector('.empty-state');
+    if (empty) empty.remove();
+    const item = document.createElement('article');
+    item.className = 'comment-item';
+    const meta = document.createElement('div');
+    meta.className = 'comment-meta';
+    const author = document.createElement('strong');
+    author.textContent = comment.username || 'Reviewer';
+    const time = document.createElement('time');
+    const date = new Date(comment.createdAt);
+    if (!Number.isNaN(date.getTime())) {
+      time.dateTime = date.toISOString();
+      time.textContent = date.toLocaleString();
+    }
+    meta.append(author, time);
+    const text = document.createElement('p');
+    text.textContent = comment.text || '';
+    item.append(meta, text);
+    list.append(item);
+    list.scrollTop = list.scrollHeight;
+  }
+
+  function openCollaboration(review) {
+    if (activeSocket) activeSocket.close(1000, 'Switching review room');
+    activeReviewId = String(review._id);
+    socketAuthenticated = false;
+    $('#send-comment').disabled = true;
+    $('#collab-panel').classList.remove('hidden');
+    $('#collab-review-title').textContent = review.title || 'Live review room';
+    $('#collab-status').textContent = 'Connecting securely…';
+    $('#collab-status').classList.remove('collab-status-live');
+    $('#comment-list').replaceChildren();
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const socket = new WebSocket(protocol + '//' + window.location.host + '/ws');
+    activeSocket = socket;
+    socket.addEventListener('open', () => {
+      socket.send(JSON.stringify({ type: 'authenticate', token: token(), reviewId: activeReviewId }));
+    });
+    socket.addEventListener('message', (event) => {
+      let payload;
+      try { payload = JSON.parse(event.data); } catch { return; }
+      if (payload.type === 'authenticated') {
+        socketAuthenticated = true;
+        $('#send-comment').disabled = false;
+        $('#collab-review-title').textContent = payload.reviewTitle || review.title || 'Live review room';
+        $('#collab-status').textContent = 'Connected · comments sync live';
+        $('#collab-status').classList.add('collab-status-live');
+        $('#comment-list').replaceChildren();
+        if (Array.isArray(payload.comments) && payload.comments.length) payload.comments.forEach(appendComment);
+        else {
+          const empty = document.createElement('p');
+          empty.className = 'empty-state';
+          empty.textContent = 'No comments yet. Start the discussion.';
+          $('#comment-list').append(empty);
+        }
+      } else if (payload.type === 'comment' && payload.comment) {
+        appendComment(payload.comment);
+      } else if (payload.type === 'presence') {
+        $('#collab-status').textContent = payload.state === 'joined' ? 'Connected · ' + payload.username + ' joined' : 'Connected · ' + payload.username + ' left';
+      } else if (payload.type === 'error') {
+        message(workspaceMessage, payload.error || 'Collaboration error', true);
+      }
+    });
+    socket.addEventListener('close', (event) => {
+      if (activeSocket !== socket) return;
+      socketAuthenticated = false;
+      $('#send-comment').disabled = true;
+      $('#collab-status').classList.remove('collab-status-live');
+      $('#collab-status').textContent = event.code === 1000 ? 'Room disconnected' : 'Connection closed. Reopen the room to reconnect.';
+    });
+    socket.addEventListener('error', () => {
+      $('#collab-status').textContent = 'Could not connect to the live room.';
+    });
+    $('#collab-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  $('#comment-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const text = $('#comment-input').value.trim();
+    if (!text || text.length > 2000 || !activeSocket || activeSocket.readyState !== WebSocket.OPEN || !socketAuthenticated) {
+      message(workspaceMessage, 'Connect to a review room before sending a comment.', true);
+      return;
+    }
+    activeSocket.send(JSON.stringify({ type: 'comment', text }));
+    $('#comment-input').value = '';
+    message(workspaceMessage, 'Comment sent.');
+  });
+  $('#close-collab').addEventListener('click', () => {
+    if (activeSocket) { activeSocket.close(1000, 'Room closed'); activeSocket = null; }
+    activeReviewId = null;
+    socketAuthenticated = false;
+    $('#send-comment').disabled = true;
+    $('#collab-panel').classList.add('hidden');
+  });
   $('#refresh-reviews').addEventListener('click', loadReviews);
   $('#code-input').addEventListener('input', (event) => {
     $('#code-count').textContent = `${event.currentTarget.value.length.toLocaleString()} / 20,000`;
