@@ -274,6 +274,25 @@
     $('#comment-input').value = '';
     message(workspaceMessage, 'Comment sent.');
   });
+
+  $('#invite-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!activeReviewId) return message(workspaceMessage, 'Open a review room before inviting a collaborator.', true);
+    const username = $('#invite-username').value.trim();
+    const button = event.currentTarget.querySelector('button[type="submit"]');
+    try {
+      await withBusy(button, async () => {
+        const result = await api('/api/review/' + encodeURIComponent(activeReviewId) + '/collaborators', {
+          method: 'POST',
+          body: JSON.stringify({ username })
+        });
+        $('#invite-form').reset();
+        message(workspaceMessage, 'Collaborator ' + result.username + ' added. They can now open this review from their workspace.');
+      }, 'Inviting…');
+    } catch (error) {
+      message(workspaceMessage, error.message, true);
+    }
+  });
   $('#close-collab').addEventListener('click', () => {
     if (activeSocket) { activeSocket.close(1000, 'Room closed'); activeSocket = null; }
     activeReviewId = null;
