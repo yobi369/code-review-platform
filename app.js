@@ -2,6 +2,7 @@
 
 require('dotenv').config();
 const express = require('express');
+const path = require('path');
 const mongoose = require('mongoose');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
@@ -14,6 +15,10 @@ const isProduction = process.env.NODE_ENV === 'production';
 app.disable('x-powered-by');
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'");
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
@@ -22,7 +27,7 @@ app.use((req, res, next) => {
 });
 app.use(express.json({ limit: '256kb', strict: true }));
 app.use(express.urlencoded({ extended: false, limit: '64kb', parameterLimit: 100 }));
-app.use(express.static('public', { dotfiles: 'deny', index: false, maxAge: isProduction ? '1h' : 0 }));
+app.use(express.static(path.join(__dirname, 'public'), { dotfiles: 'deny', index: false, maxAge: isProduction ? '1h' : 0 }));
 
 app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }));
 app.get('/ready', (_req, res) => {
