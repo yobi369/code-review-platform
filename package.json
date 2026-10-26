@@ -13,14 +13,14 @@
     "node": ">=20"
   },
   "dependencies": {
-    "dotenv": "^8.2.0",
-    "ejs": "^3.1.6",
-    "express": "^4.17.1",
+    "dotenv": "^17.2.3",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^5.10.9"
+    "mongoose": "^9.11.4"
   },
   "devDependencies": {
-    "nodemon": "^2.0.4"
+    "nodemon": "^3.1.11"
   },
   "author": "Brian Mutunga",
   "license": "ISC"
