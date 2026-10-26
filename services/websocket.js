@@ -69,7 +69,7 @@ function attachWebSocket(server) {
           }
           const [user, review] = await Promise.all([
             User.findById(decoded.id).select('username').lean(),
-            Review.findOne({ _id: message.reviewId, owner: decoded.id }).select('title comments').lean()
+            Review.findOne({ _id: message.reviewId, $or: [{ owner: decoded.id }, { collaborators: decoded.id }] }).select('title comments').lean()
           ]);
           if (!user || !review) return socket.close(1008, 'Review access denied');
           state.authenticated = true;
@@ -107,11 +107,11 @@ function attachWebSocket(server) {
         if (!text || text.length > MAX_COMMENT_LENGTH) {
           return socket.send(JSON.stringify({ type: 'error', error: `Comments must be between 1 and ${MAX_COMMENT_LENGTH} characters.` }));
         }
-        const reviewExists = await Review.exists({ _id: state.reviewId, owner: state.userId });
+        const reviewExists = await Review.exists({ _id: state.reviewId, $or: [{ owner: state.userId }, { collaborators: state.userId }] });
         if (!reviewExists) return socket.close(1008, 'Review access denied');
         const comment = { user: state.userId, username: state.username, text, createdAt: new Date() };
         await Review.updateOne(
-          { _id: state.reviewId, owner: state.userId },
+          { _id: state.reviewId, $or: [{ owner: state.userId }, { collaborators: state.userId }] },
           { $push: { comments: { $each: [comment], $slice: -100 } } }
         );
         broadcast(wss, state.reviewId, {
