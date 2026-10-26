@@ -26,5 +26,7 @@ jobs:
         run: npm test
       - name: Audit all dependencies
         run: npm audit --audit-level=high
+      - name: Validate Compose configuration
+        run: JWT_SECRET=ci-test-secret-with-more-than-32-characters docker compose config --quiet
       - name: Build production container
         run: docker build --tag code-review-platform:ci .
