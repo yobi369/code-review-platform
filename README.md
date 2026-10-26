@@ -60,7 +60,7 @@ CI checks syntax and the focused AI validation cases; these are not substitutes 
 
 ## Security and release
 
-Review [SECURITY.md](SECURITY.md) and the [production readiness checklist](docs/PRODUCTION-READINESS.md). The codebase has legacy duplicate directories and a dated dependency stack that still require cleanup and upgrades. Existing Git history may contain environment files; rotate any real credentials that may have been exposed and assess history cleanup separately. Configure secret scanning, push protection, Dependabot, database TLS, least-privilege access, backups, and tested restore procedures before handling real users' data.
+Review [SECURITY.md](SECURITY.md) and the [production readiness checklist](docs/PRODUCTION-READINESS.md). The dependency stack remains dated and still requires upgrades and a full audit. Existing Git history may contain environment files; rotate any real credentials that may have been exposed and assess history cleanup separately. Configure secret scanning, push protection, Dependabot, database TLS, least-privilege access, backups, and tested restore procedures before handling real users' data.
 
 ## Known limitations
 
