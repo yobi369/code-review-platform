@@ -3,10 +3,12 @@ const express = require('express');
 const router = express.Router();
 const reviewController = require('../controllers/review');
 const authenticate = require('../middleware/auth');
+const { createRateLimiter } = require('../middleware/rateLimit');
 const { analyzeCode } = require('../services/ai');
 
+const analysisLimiter = createRateLimiter({ windowMs: 60 * 1000, max: 5, message: 'AI analysis rate limit reached. Try again later.' });
 router.post('/', authenticate, reviewController.createReview);
-router.post('/analyze', authenticate, async (req, res) => {
+router.post('/analyze', authenticate, analysisLimiter, async (req, res) => {
   try {
     const result = await analyzeCode(req.body && req.body.code);
     return res.json(result);
