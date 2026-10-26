@@ -6,6 +6,7 @@ An AI-assisted code review API built with Node.js, Express and MongoDB.
 
 ## Current capabilities
 
+- Responsive browser workspace for account registration/login, review creation/history, and AI-assisted code analysis.
 - User registration and login with scrypt password hashing for new registrations.
 - Short-lived JWT bearer tokens with issuer, audience and algorithm validation.
 - Review creation and listing scoped to the authenticated user.
