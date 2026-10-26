@@ -10,6 +10,7 @@ const MAX_COMMENT_LENGTH = 2000;
 const MAX_MESSAGES_PER_MINUTE = 10;
 const MAX_CONNECTIONS = 200;
 
+let activeServer;
 function attachWebSocket(server) {
   const wss = new WebSocket.WebSocketServer({
     server,
@@ -19,6 +20,7 @@ function attachWebSocket(server) {
     clientTracking: true
   });
 
+  activeServer = wss;
   wss.on('connection', (socket, request) => {
     if (wss.clients.size > MAX_CONNECTIONS) {
       socket.close(1013, 'Server is busy');
@@ -153,4 +155,15 @@ function broadcast(wss, reviewId, payload, exclude) {
     }
   }
 }
+function revokeUserAccess(reviewId, userId) {
+  if (!activeServer) return;
+  for (const client of activeServer.clients) {
+    const state = client.reviewState;
+    if (state && state.authenticated && state.reviewId === String(reviewId) && state.userId === String(userId)) {
+      if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({ type: 'access_revoked' }));
+      client.close(1008, 'Review access revoked');
+    }
+  }
+}
 module.exports = attachWebSocket;
+module.exports.revokeUserAccess = revokeUserAccess;
