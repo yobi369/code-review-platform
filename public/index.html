@@ -64,7 +64,7 @@
           <div class="panel-heading"><div><p class="kicker">02 / INSPECT</p><h3 id="ai-review-title">AI code review</h3></div><span class="section-number">02</span></div>
           <form id="ai-form" class="form-stack">
             <label for="code-input">Source code</label><textarea id="code-input" name="code" maxlength="20000" rows="8" spellcheck="false" placeholder="Paste a small, non-sensitive code snippet…" required aria-describedby="code-help code-count"></textarea>
-            <div class="field-row"><p class="field-help" id="code-help">Up to 20,000 characters. Do not include secrets or private customer data.</p><span id="code-count" class="counter">0 / 20000</span></div>
+            <div class="field-row"><p class="field-help" id="code-help">Up to 20,000 characters. Do not include secrets or private customer data. <a href="/privacy.html" target="_blank" rel="noreferrer">Read AI privacy details</a>.</p><span id="code-count" class="counter">0 / 20000</span></div>
             <button class="button primary full" type="submit">Analyze code <span aria-hidden="true">✳</span></button>
           </form>
           <div id="ai-result" class="result-box hidden" aria-live="polite"><div class="result-heading"><span class="result-dot"></span><strong>Review feedback</strong></div><div id="ai-result-content" class="ai-findings"></div><p class="field-help">AI findings can be incorrect or incomplete. Validate every suggestion before applying it.</p></div>
