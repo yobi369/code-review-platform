@@ -44,6 +44,49 @@
     $('#auth-subtitle').textContent = registering ? 'Set up a private workspace for your reviews.' : 'Sign in to continue your reviews.';
     message(authMessage, '');
   }
+  function renderAIReview(review) {
+    const container = $('#ai-result-content');
+    container.replaceChildren();
+    if (!review || typeof review !== 'object' || typeof review.summary !== 'string' || !Array.isArray(review.findings)) {
+      const fallback = document.createElement('pre');
+      fallback.textContent = typeof review === 'string' ? review : JSON.stringify(review, null, 2);
+      container.append(fallback);
+      return;
+    }
+    const summary = document.createElement('p');
+    summary.className = 'ai-summary';
+    summary.textContent = review.summary;
+    container.append(summary);
+    if (review.findings.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'empty-state';
+      empty.textContent = 'No actionable findings were returned. This does not guarantee the code is free of defects.';
+      container.append(empty);
+      return;
+    }
+    for (const finding of review.findings) {
+      const card = document.createElement('article');
+      card.className = 'finding-card';
+      const heading = document.createElement('div');
+      heading.className = 'finding-heading';
+      const severity = document.createElement('span');
+      severity.className = 'severity severity-' + (['critical', 'high', 'medium', 'low', 'info'].includes(finding.severity) ? finding.severity : 'info');
+      severity.textContent = String(finding.severity || 'info').toUpperCase();
+      const title = document.createElement('h4');
+      title.textContent = finding.title || 'Finding';
+      heading.append(severity, title);
+      const explanation = document.createElement('p');
+      explanation.textContent = finding.explanation || '';
+      const fixLabel = document.createElement('strong');
+      fixLabel.textContent = 'Suggested fix';
+      const fix = document.createElement('p');
+      fix.className = 'finding-fix';
+      fix.textContent = finding.suggestedFix || 'No fix suggestion provided.';
+      card.append(heading, explanation, fixLabel, fix);
+      container.append(card);
+    }
+  }
+
   function showWorkspace() {
     authPanel.classList.add('hidden');
     workspace.classList.remove('hidden');
@@ -126,7 +169,7 @@
     try {
       await withBusy(button, async () => {
         const payload = await api('/api/review/analyze', { method: 'POST', body: JSON.stringify({ code: $('#code-input').value }) });
-        $('#ai-result-text').textContent = payload.review || 'No review text was returned.';
+        renderAIReview(payload.review);
         $('#ai-result').classList.remove('hidden');
       }, 'Analyzing…');
     } catch (error) { message(workspaceMessage, error.message, true); }
