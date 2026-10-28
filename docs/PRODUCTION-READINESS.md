@@ -21,7 +21,8 @@ This is a release gate and records work still required; it does not claim that u
 - [x] Remove tracked `node_modules` from the upgrade branch and remove the duplicate nested application tree; retain the root app as the canonical entrypoint.
 - [x] Upgrade Express/Mongoose and refresh the lockfile; clean install and full dependency audit passed in CI.
 - [x] Verify registration/login, review privacy before invitation, collaborator invitation, live comment persistence/broadcast, collaborator revocation, and denial of revoked reconnects against a disposable MongoDB service in CI.
-- [ ] Add cases for legacy plaintext-password migration, duplicate usernames, database failure paths, WebSocket reconnect/chaos, and broader permission edge cases. Existing legacy review records without an owner cannot safely be assigned automatically; back up and explicitly migrate them if they contain data that must be retained.
+- [x] Add a backup-first legacy review ownership audit/migration script that requires an explicit per-review owner mapping and never guesses ownership.
+- [ ] Add cases for legacy plaintext-password migration, duplicate usernames, database failure paths, WebSocket reconnect/chaos, and broader permission edge cases. Run the legacy review migration against the actual deployment only after backing up the database and reviewing a complete mapping.
 - [x] Add bounded per-process rate limits to authentication and AI routes; [ ] replace the in-memory store with a shared store before horizontally scaling.
 - [ ] Configure CORS allowlists and CSRF protections if cookie-based authentication is introduced.
 - [x] Validate provider output into a strict bounded JSON schema.
