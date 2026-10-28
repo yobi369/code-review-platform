@@ -12,6 +12,7 @@ This is a release gate and records work still required; it does not claim that u
 - [x] Validate JWT bearer tokens, issuer, audience, expiry, and signing algorithm.
 - [x] Scope review creation/listing to the authenticated owner.
 - [x] Add focused AI input/configuration tests and CI checks.
+- [x] Validate AI output against a bounded JSON schema and document external source-code processing in `docs/AI-PRIVACY.md`.
 
 ## Required before production
 
@@ -23,8 +24,10 @@ This is a release gate and records work still required; it does not claim that u
 - [ ] Add cases for legacy plaintext-password migration, duplicate usernames, database failure paths, WebSocket reconnect/chaos, and broader permission edge cases. Existing legacy review records without an owner cannot safely be assigned automatically; back up and explicitly migrate them if they contain data that must be retained.
 - [x] Add bounded per-process rate limits to authentication and AI routes; [ ] replace the in-memory store with a shared store before horizontally scaling.
 - [ ] Configure CORS allowlists and CSRF protections if cookie-based authentication is introduced.
-- [ ] Validate provider output into a strict JSON schema; handle provider rate limits, retries, quotas, and cost controls.
-- [ ] Add a documented privacy/retention policy for source code sent to an external provider.
+- [x] Validate provider output into a strict bounded JSON schema.
+- [ ] Add provider retry strategy, usage quotas, and cost controls.
+- [x] Document source-code processing expectations and deployment-owner privacy responsibilities in `docs/AI-PRIVACY.md`.
+- [ ] Publish a user-facing privacy notice and verify the provider account's retention/data-processing settings before enabling real-user access.
 - [x] Integrate authenticated WebSocket rooms with owner/collaborator authorization, persisted comments, presence updates, per-connection rate limits, and token-expiry handling.
 - [ ] Configure database TLS, least-privilege credentials, backups, and successfully test a restore.
 - [ ] Run staging smoke tests, accessibility checks, dependency scanning, SAST/DAST, load testing, and an independent security review.
