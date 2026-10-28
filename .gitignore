@@ -7,3 +7,6 @@ coverage/
 .DS_Store
 npm-debug.log*
 *.log
+
+# Local database exports and migration backups
+backups/
