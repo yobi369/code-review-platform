@@ -1,30 +1,29 @@
 # Code Review Platform
 
-An AI-assisted code review API built with Node.js, Express and MongoDB.
+A collaborative code review workspace built with Node.js, Express, MongoDB, WebSockets, and optional AI-assisted analysis.
 
-> **Status:** hardening in progress. Do not use for production or confidential source code until the remaining release gates in [docs/PRODUCTION-READINESS.md](docs/PRODUCTION-READINESS.md) are completed. AI findings are advisory and require human review.
+> **Release status:** security-hardening and integration work is in progress. Do not use this branch for production or confidential source code until the release gates in [docs/PRODUCTION-READINESS.md](docs/PRODUCTION-READINESS.md) have been completed. AI findings are advisory and require human review.
 
-## Current capabilities
+## Capabilities
 
-- Responsive browser workspace for account registration/login, review creation/history, and AI-assisted code analysis.
-- User registration and login with scrypt password hashing for new registrations.
-- Short-lived JWT bearer tokens with issuer, audience and algorithm validation.
-- Review creation, owner-scoped access, and review sharing with invited collaborators.
-- Authenticated WebSocket rooms for persisted live comments, presence updates, and immediate access revocation.
-- Optional AI-assisted review via an environment-configured provider.
-- Health and database-readiness endpoints, request size limits, security headers, graceful shutdown, and per-process rate limits for authentication and AI analysis.
-- GitHub Actions CI syntax checks, focused AI-service/rate-limit tests, dependency audit, and production-container build.
-
-Legacy accounts created by the original version with plaintext passwords are upgraded to scrypt hashes after a successful login. This compatibility path should be treated as temporary. The repository includes a backup-first audit/migration script for old review records without owner IDs; it never guesses ownership.
+- Responsive browser workspace for account registration/login, review creation/history, and AI-assisted analysis.
+- Scrypt password hashes for new accounts, with a temporary compatibility path that upgrades legacy plaintext passwords after a successful login.
+- Short-lived JWT bearer tokens validated for signing algorithm, issuer, audience, and expiry.
+- Owner-scoped review access and invitations for existing collaborators.
+- Authenticated WebSocket review rooms with persisted comments, presence updates, token-expiry handling, per-connection limits, and access revocation that terminates active sessions.
+- Optional provider-backed AI analysis with bounded input, timeout handling, schema-validated JSON results, and accessible severity cards.
+- User-facing [AI source-code privacy notice](docs/AI-PRIVACY.md) describing external processing considerations.
+- Health/readiness endpoints, bounded request bodies, baseline security headers, graceful shutdown, and per-process authentication/AI rate limits.
+- Docker-based local setup with MongoDB persistence, plus GitHub Actions checks for syntax, tests, dependency audit, Compose configuration, container build, and MongoDB-backed integration flows.
 
 ## Requirements and local setup
 
-Requires Node.js 20.19+ and a reachable MongoDB instance. For a containerized local setup, Docker Engine and the Docker Compose plugin are also supported.
+Requires Node.js 20.19+ and a reachable MongoDB instance. Docker Engine and the Docker Compose plugin are supported for the containerized local setup.
 
 ```bash
 npm ci
 cp .env.example .env
-# Set a strong unique JWT_SECRET and your DATABASE_URL
+# Set a strong unique JWT_SECRET and your DATABASE_URL.
 npm start
 ```
 
@@ -36,35 +35,50 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Open `http://127.0.0.1:3001`. Compose stores local MongoDB data in a named volume and binds the web port to loopback only. AI analysis remains disabled until `OPENAI_API_KEY` is set. This is a local development setup, not a managed production deployment. Stop with `docker compose down`; use `docker compose down -v` only if you intentionally want to delete the local database volume.
+Open `http://127.0.0.1:3001`. Compose stores local MongoDB data in a named volume and binds the web port to loopback only. AI analysis remains disabled until `OPENAI_API_KEY` is configured. This is a local development setup, not a managed production deployment. Stop with `docker compose down`; use `docker compose down -v` only if you intentionally want to delete the local database volume.
 
-- `GET /health` reports process health.
-- `GET /ready` returns HTTP 200 only when MongoDB is connected.
-- `POST /api/auth/register` accepts `username` and `password` (minimum 12 characters).
-- `POST /api/auth/login` returns a short-lived bearer token.
-- `POST /api/review` creates a review for the authenticated user.
-- `GET /api/review` lists reviews you own or have been invited to collaborate on.
-- `POST /api/review/:id/collaborators` invites an existing username (owner only).
-- `DELETE /api/review/:id/collaborators/:username` revokes access (owner only).
-- The browser opens a live room from a review card; WebSocket clients authenticate with their bearer token before receiving comments.
-- `POST /api/review/analyze` accepts `code` and requires `OPENAI_API_KEY`.
+## API overview
+
+- `GET /health` — process health.
+- `GET /ready` — returns HTTP 200 only when MongoDB is connected.
+- `POST /api/auth/register` — accepts `username` and `password` (password length 12–256 characters).
+- `POST /api/auth/login` — returns a short-lived bearer token.
+- `POST /api/review` — creates a review for the authenticated user.
+- `GET /api/review` — lists reviews you own or have been invited to collaborate on.
+- `POST /api/review/:id/collaborators` — owner invites an existing username.
+- `DELETE /api/review/:id/collaborators/:username` — owner revokes collaborator access.
+- `POST /api/review/analyze` — accepts source code and requires `OPENAI_API_KEY`.
+
+The browser workspace opens live rooms from review cards. WebSocket clients must authenticate with a bearer token before receiving review comments.
 
 ## Environment variables
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `PORT` | No | HTTP port, default 3001 |
-| `NODE_ENV` | No | Use `production` in deployment |
+| `PORT` | No | HTTP port; defaults to 3001 |
+| `NODE_ENV` | No | Set to `production` in deployment |
 | `DATABASE_URL` | Yes | MongoDB connection string |
-| `JWT_SECRET` | Yes for authentication | Unique random secret, at least 32 characters |
+| `JWT_SECRET` | Yes for authentication | Unique random secret of at least 32 characters |
 | `OPENAI_API_KEY` | No | Enables AI analysis |
-| `OPENAI_MODEL` | No | Provider model, defaults to `gpt-4.1-mini` |
+| `OPENAI_MODEL` | No | Provider model; defaults to `gpt-4.1-mini` |
 
-Never commit real environment files or use example secrets in a deployed environment. Review [AI source-code privacy and processing](docs/AI-PRIVACY.md) before enabling analysis. The AI endpoint returns schema-validated JSON findings; do not send proprietary code to an external provider unless you are authorized to do so.
+Never commit real environment files or use example secrets in a deployed environment. Do not submit proprietary code to an external provider unless you are authorized to do so and have checked the provider's retention and data-processing settings.
 
-## Legacy data migration
+## Legacy review data
 
-The original version stored review sessions without an owner field. The upgraded API correctly hides those records until their ownership is explicitly assigned. Back up the database first, then run `node scripts/migrate-legacy-reviews.js` to create a private JSON backup and report the count. To apply ownership, prepare a JSON object mapping **every** legacy review `_id` to the intended existing user `_id`, then run `node scripts/migrate-legacy-reviews.js --apply ./your-local-owner-map.json`. Keep the mapping and backup out of Git; the script requires an explicit complete mapping and creates a fresh backup before modifying records. Review the backup and mapping carefully before applying.
+The original version stored review sessions without an owner field. The upgraded API hides those records until ownership is explicitly assigned. Back up the database first, then run:
+
+```bash
+node scripts/migrate-legacy-reviews.js
+```
+
+This audit-only command creates a private JSON backup and reports legacy records. To apply ownership, prepare a JSON object mapping **every** legacy review `_id` to the intended existing user `_id`, then run:
+
+```bash
+node scripts/migrate-legacy-reviews.js --apply ./your-local-owner-map.json
+```
+
+Keep the mapping and backup out of Git. The script requires a complete explicit mapping and creates a fresh backup before changing records. Review the backup and mapping carefully before applying; the tool never guesses ownership.
 
 ## Validation
 
@@ -75,18 +89,21 @@ npm test
 npm audit
 ```
 
-CI checks JavaScript syntax, focused AI/auth/rate-limit/HTTP/WebSocket-auth tests, MongoDB-backed registration/review/collaboration integration tests, a full dependency audit, Compose configuration, and a production Docker build. These checks are not substitutes for penetration testing, load testing, or production smoke tests.
+GitHub Actions also runs MongoDB-backed integration tests covering registration/login, legacy password upgrade, duplicate registration, review isolation, collaborator invitations, live comment persistence/broadcast, and revocation. These checks are valuable automated evidence, not substitutes for production smoke tests, accessibility checks, load testing, or independent security review.
 
 ## Security and release
 
-Review [SECURITY.md](SECURITY.md) and the [production readiness checklist](docs/PRODUCTION-READINESS.md). Express and Mongoose have been upgraded and the lockfile regenerated; CI now runs a full dependency audit. Review the current CI result before considering the dependency upgrade verified. Existing Git history may contain environment files; rotate any real credentials that may have been exposed and assess history cleanup separately. Configure secret scanning, push protection, Dependabot, database TLS, least-privilege access, backups, and tested restore procedures before handling real users' data.
+Read [SECURITY.md](SECURITY.md) and the [production-readiness checklist](docs/PRODUCTION-READINESS.md). Express and Mongoose have been upgraded and the lockfile refreshed; CI performs a full dependency audit. Existing Git history may still contain old environment files or credentials even though the current tree excludes local secrets. Rotate any real credentials that may have been exposed and assess history cleanup separately.
+
+Before real-user deployment, configure production database TLS and least-privilege credentials, shared rate limiting for multi-instance deployments, monitoring and alerting, provider usage/retention controls, scheduled backups and a successfully tested restore. Complete staging smoke tests, accessibility checks, security testing, and load tests.
 
 ## Known limitations
 
-- Live WebSocket collaboration is implemented for owners and invited collaborators, but end-to-end multi-user/database tests remain outstanding.
-- AI findings are returned as provider text and are not yet schema-validated into a typed issue model.
-- Comprehensive database-backed auth/review/collaboration tests, distributed rate limiting for multiple app instances, broader abuse controls, and a tested deployment/restore procedure remain release blockers.
-- No production deployment, penetration test, load test, or backup restore is claimed.
+- Rate limits are stored in process memory; they are not shared across multiple app instances.
+- Legacy plaintext-password compatibility remains until each existing user logs in successfully.
+- Legacy reviews without owner IDs require backup and explicit ownership mapping before they can be made visible.
+- Production database TLS, operational backups/restore, shared rate limiting, provider usage budgets, monitoring, staging acceptance, load tests, and independent security review are not verified here.
+- No live hosted deployment, penetration test, load test, or backup restore is claimed.
 
 ## License
 
