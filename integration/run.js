@@ -21,6 +21,7 @@ if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
 const suffix = Date.now().toString(36);
 const ownerName = 'it-owner-' + suffix;
 const collaboratorName = 'it-collab-' + suffix;
+const legacyName = 'it-legacy-' + suffix;
 const password = 'Integration-test-password-2026!';
 let server;
 let wss;
@@ -117,7 +118,19 @@ async function main() {
   baseUrl = 'http://127.0.0.1:' + server.address().port;
 
   try {
+    // Simulate an account created by the original version, which stored plaintext passwords.
+    await User.create({ username: legacyName, password });
+    const legacyLogin = await request('/api/auth/login', { method: 'POST', body: JSON.stringify({ username: legacyName, password }) });
+    assert.equal(legacyLogin.status, 200, 'legacy account should be able to log in once');
+    assert.ok(legacyLogin.body.token, 'legacy login should return a bearer token');
+    const migratedLegacyUser = await User.findOne({ username: legacyName }).select('+password');
+    assert.match(migratedLegacyUser.password, /^scrypt\$[a-f0-9]{32}\$[a-f0-9]{128}$/, 'legacy password must be replaced with a scrypt hash');
+    const badLegacyLogin = await request('/api/auth/login', { method: 'POST', body: JSON.stringify({ username: legacyName, password: 'wrong-password-value' }) });
+    assert.equal(badLegacyLogin.status, 401, 'incorrect legacy password must be rejected after migration');
+
     ownerToken = await registerAndLogin(ownerName);
+    const duplicate = await request('/api/auth/register', { method: 'POST', body: JSON.stringify({ username: ownerName, password }) });
+    assert.equal(duplicate.status, 409, 'duplicate usernames should be rejected with a conflict');
     collaboratorToken = await registerAndLogin(collaboratorName);
 
     const created = await request('/api/review', {
@@ -165,7 +178,7 @@ async function main() {
     assert.ok(!afterRevoke.body.some((item) => String(item._id) === reviewId), 'revoked collaborator should lose review access');
 
     assert.equal(await expectRoomDenied(collaboratorToken, reviewId), 1008, 'revoked collaborator must not reconnect');
-    console.log('Integration tests passed: authentication, review isolation, invitation, live comment persistence/broadcast, and access revocation.');
+    console.log('Integration tests passed: legacy password migration, duplicate registration, review isolation, invitation, live comment persistence/broadcast, and access revocation.');
   } finally {
     for (const socket of sockets) {
       if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) socket.terminate();
@@ -173,7 +186,7 @@ async function main() {
     if (wss) await new Promise((resolve) => wss.close(resolve));
     if (server && server.listening) await new Promise((resolve) => server.close(resolve));
     if (reviewId) await Review.deleteOne({ _id: reviewId });
-    await User.deleteMany({ username: { $in: [ownerName, collaboratorName] } });
+    await User.deleteMany({ username: { $in: [ownerName, collaboratorName, legacyName] } });
     await mongoose.connection.close();
   }
 }
