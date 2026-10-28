@@ -1,39 +1,38 @@
 # Production Readiness Checklist
 
-This is a release gate and records work still required; it does not claim that unperformed checks have passed.
+This checklist is a release gate. It records implemented controls and outstanding verification separately; it does not claim that unperformed checks have passed.
 
 ## Implemented on the hardening branch
 
 - [x] Ignore local environment files and generated dependencies in future commits.
-- [x] Add a safe environment template, setup documentation, and security reporting policy.
+- [x] Add an environment template, setup documentation, and security reporting policy.
 - [x] Add bounded HTTP body parsing, baseline response security headers, health/readiness endpoints, and graceful shutdown.
 - [x] Configure AI credentials through environment variables, enforce code-size limits, and set a provider timeout.
-- [x] Add scrypt password hashing for new accounts and migrate legacy plaintext passwords after successful login.
+- [x] Add scrypt password hashing for new accounts and upgrade legacy plaintext passwords after successful login.
 - [x] Validate JWT bearer tokens, issuer, audience, expiry, and signing algorithm.
-- [x] Scope review creation/listing to the authenticated owner.
-- [x] Add focused AI input/configuration tests and CI checks.
+- [x] Scope review creation/listing to the authenticated owner and add owner-managed collaborator invitations/revocation.
 - [x] Validate AI output against a bounded JSON schema and document external source-code processing in `docs/AI-PRIVACY.md`.
+- [x] Add authenticated WebSocket rooms, persisted comments, presence updates, connection limits, token-expiry handling, and active-session revocation.
+- [x] Add a backup-first legacy review ownership audit/migration script requiring explicit per-review owner mapping; it never guesses ownership.
+- [x] Add unit/HTTP tests and MongoDB-backed integration tests for legacy password migration, duplicate registration, review privacy, collaboration, comment persistence/broadcast, and revocation.
+- [x] Add GitHub Actions checks for clean dependency install, syntax, tests, dependency audit, Compose validation, and production container build.
 
 ## Required before production
 
-- [x] CI passed for commit `33ee39e4aa33cd9c9ed7254ba30f1d2590dbb18e`: clean install, syntax checks, automated tests, MongoDB-backed collaboration integration tests, full high-severity dependency audit, Compose validation, and production Docker build. Re-run CI after subsequent changes.
+- [ ] Re-run and confirm all CI checks on the latest branch commit after the latest integration-test and documentation changes.
 - [ ] Rotate all real credentials ever committed; review Git history and coordinate any required history rewrite.
-- [x] Remove tracked `node_modules` from the upgrade branch and remove the duplicate nested application tree; retain the root app as the canonical entrypoint.
-- [x] Upgrade Express/Mongoose and refresh the lockfile; clean install and full dependency audit passed in CI.
-- [x] Verify registration/login, review privacy before invitation, collaborator invitation, live comment persistence/broadcast, collaborator revocation, and denial of revoked reconnects against a disposable MongoDB service in CI.
-- [x] Add a backup-first legacy review ownership audit/migration script that requires an explicit per-review owner mapping and never guesses ownership.
-- [ ] Add cases for legacy plaintext-password migration, duplicate usernames, database failure paths, WebSocket reconnect/chaos, and broader permission edge cases. Run the legacy review migration against the actual deployment only after backing up the database and reviewing a complete mapping.
+- [x] Remove tracked `node_modules` from the hardening branch and remove the duplicate nested application tree; retain the root app as the canonical entrypoint.
+- [x] Upgrade Express/Mongoose and refresh the lockfile; a prior CI run passed the full high-severity dependency audit. Confirm again on the latest commit.
+- [ ] Add tests for database failure paths, WebSocket reconnect/chaos, and broader permission edge cases.
+- [ ] If legacy review records must be retained, back up the actual deployment database, review a complete owner mapping, and run the migration deliberately. Never guess ownership.
 - [x] Add bounded per-process rate limits to authentication and AI routes; [ ] replace the in-memory store with a shared store before horizontally scaling.
 - [ ] Configure CORS allowlists and CSRF protections if cookie-based authentication is introduced.
-- [x] Validate provider output into a strict bounded JSON schema.
 - [ ] Add provider retry strategy, usage quotas, and cost controls.
-- [x] Document source-code processing expectations and deployment-owner privacy responsibilities in `docs/AI-PRIVACY.md`.
-- [ ] Publish a user-facing privacy notice and verify the provider account's retention/data-processing settings before enabling real-user access.
-- [x] Integrate authenticated WebSocket rooms with owner/collaborator authorization, persisted comments, presence updates, per-connection rate limits, and token-expiry handling.
-- [ ] Configure database TLS, least-privilege credentials, backups, and successfully test a restore.
-- [ ] Run staging smoke tests, accessibility checks, dependency scanning, SAST/DAST, load testing, and an independent security review.
+- [ ] Verify the AI provider account's retention/data-processing settings before enabling real-user access; the published privacy notice does not replace this check.
+- [ ] Configure production database TLS, least-privilege credentials, scheduled backups, and successfully test a restore.
+- [ ] Run staging smoke tests, accessibility checks, SAST/DAST, load testing, and an independent security review.
 - [ ] Verify HTTPS deployment, monitoring, alerts, rollback, and incident-response ownership.
 
 ## Known limitations
 
-The current app is a hardening baseline, not yet production-ready. Legacy plaintext password compatibility remains until each existing user logs in. Legacy review records created before ownership fields existed are hidden by the new owner-scoped query; back up and explicitly migrate any records that must be retained. Existing historical credentials may remain in Git history even after current-tree environment files are removed. The current tree is consolidated and the real-time WebSocket service is attached to the HTTP server. The main multi-user collaboration flow passes a MongoDB-backed CI integration suite; load, chaos, and production-environment verification remain outstanding. No live deployment, penetration test, load test, or backup restore is claimed.
+This is a hardened development baseline, not a verified production deployment. Legacy plaintext-password compatibility remains until each existing user logs in successfully. Legacy reviews without owner IDs are hidden until explicitly mapped to owners. Current-tree environment files are excluded, but old credentials may remain in Git history and must be rotated if exposed. Rate limits are process-local and do not coordinate across instances. Provider retention settings, usage budgets, production database TLS, operational backups/restores, staging acceptance, load testing, and independent security review are not verified. No live deployment, penetration test, load test, or backup restore is claimed.
