@@ -15,7 +15,7 @@ An AI-assisted code review API built with Node.js, Express and MongoDB.
 - Health and database-readiness endpoints, request size limits, security headers, graceful shutdown, and per-process rate limits for authentication and AI analysis.
 - GitHub Actions CI syntax checks, focused AI-service/rate-limit tests, dependency audit, and production-container build.
 
-Legacy accounts created by the original version with plaintext passwords are upgraded to scrypt hashes after a successful login. This compatibility path should be treated as temporary and existing account data should be backed up before release.
+Legacy accounts created by the original version with plaintext passwords are upgraded to scrypt hashes after a successful login. This compatibility path should be treated as temporary. The repository includes a backup-first audit/migration script for old review records without owner IDs; it never guesses ownership.
 
 ## Requirements and local setup
 
@@ -61,6 +61,10 @@ Open `http://127.0.0.1:3001`. Compose stores local MongoDB data in a named volum
 | `OPENAI_MODEL` | No | Provider model, defaults to `gpt-4.1-mini` |
 
 Never commit real environment files or use example secrets in a deployed environment. Review [AI source-code privacy and processing](docs/AI-PRIVACY.md) before enabling analysis. The AI endpoint returns schema-validated JSON findings; do not send proprietary code to an external provider unless you are authorized to do so.
+
+## Legacy data migration
+
+The original version stored review sessions without an owner field. The upgraded API correctly hides those records until their ownership is explicitly assigned. Back up the database first, then run `node scripts/migrate-legacy-reviews.js` to create a private JSON backup and report the count. To apply ownership, prepare a JSON object mapping **every** legacy review `_id` to the intended existing user `_id`, then run `node scripts/migrate-legacy-reviews.js --apply ./your-local-owner-map.json`. Keep the mapping and backup out of Git; the script requires an explicit complete mapping and creates a fresh backup before modifying records. Review the backup and mapping carefully before applying.
 
 ## Validation
 
