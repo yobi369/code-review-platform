@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10151d">
+  <meta name="description" content="How ReviewForge handles code submitted for AI-assisted review.">
+  <title>AI Privacy · ReviewForge</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Return to Code Review Platform"><span class="brand-mark" aria-hidden="true">CR</span><span>Review<span class="brand-muted">Forge</span></span></a>
+    <div class="topbar-right"><a class="subtle-link" href="/">Back to workspace</a></div>
+  </header>
+  <main class="shell privacy-page">
+    <section class="hero">
+      <div class="eyebrow"><span class="eyebrow-line"></span> TRANSPARENCY FIRST</div>
+      <h1>AI code review <span class="headline-accent">privacy.</span></h1>
+      <p class="hero-copy">Understand what happens when you submit code for external AI analysis.</p>
+    </section>
+    <article class="panel privacy-content">
+      <h2>What is sent?</h2>
+      <p>When you use AI code review, the source code you submit is sent to the external AI provider configured by the service operator. The provider processes that content under the applicable account terms, settings, and retention policies.</p>
+      <h2>What should I avoid submitting?</h2>
+      <p>Do not submit passwords, API keys, private keys, personal data, customer data, or confidential source code unless you are authorized to share it with the configured provider. Remove secrets and unrelated proprietary content first.</p>
+      <h2>How does this app handle submissions?</h2>
+      <ul>
+        <li>Submissions are limited to 20,000 characters.</li>
+        <li>The application does not execute submitted code or suggested fixes.</li>
+        <li>AI output is advisory, schema-validated, and may still be incorrect or incomplete.</li>
+        <li>The code-review endpoint does not save submitted code as a review record. Infrastructure/provider logs and retention are separate and depend on the deployment and provider.</li>
+      </ul>
+      <h2>Before using this with a team</h2>
+      <p>The service operator should confirm provider retention and data-processing settings, publish any organization-specific privacy terms, set usage budgets, and establish a process for data requests. This page is informational and is not legal advice.</p>
+      <p><a class="button secondary" href="/">Return to workspace →</a></p>
+    </article>
+    <footer class="page-footer"><span>REVIEWFORGE · PRIVACY INFORMATION</span><span>Review before you submit.</span></footer>
+  </main>
+</body>
+</html>

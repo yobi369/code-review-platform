@@ -1,22 +1,24 @@
+'use strict';
 const express = require('express');
 const router = express.Router();
 const reviewController = require('../controllers/review');
 const authenticate = require('../middleware/auth');
+const { createRateLimiter } = require('../middleware/rateLimit');
+const { analyzeCode } = require('../services/ai');
 
-// Create review route
+const analysisLimiter = createRateLimiter({ windowMs: 60 * 1000, max: 5, message: 'AI analysis rate limit reached. Try again later.' });
 router.post('/', authenticate, reviewController.createReview);
-
-router.post('/analyze', authenticate, async (req, res) => {
-    const { code } = req.body;
-    try {
-        const analysisResult = await analyzeCode(code);
-        res.json(analysisResult);
-    } catch (error) {
-        res.status(500).json({ error: "Error analyzing code" });
-    }
+router.post('/:id/collaborators', authenticate, createRateLimiter({ windowMs: 60 * 60 * 1000, max: 10, message: 'Collaborator invite limit reached.' }), reviewController.addCollaborator);
+router.delete('/:id/collaborators/:username', authenticate, createRateLimiter({ windowMs: 60 * 60 * 1000, max: 20, message: 'Collaborator management rate limit reached.' }), reviewController.removeCollaborator);
+router.post('/analyze', authenticate, analysisLimiter, async (req, res) => {
+  try {
+    const result = await analyzeCode(req.body && req.body.code);
+    return res.json(result);
+  } catch (error) {
+    const status = Number.isInteger(error.statusCode) ? error.statusCode : 502;
+    if (status >= 500) console.error('Code analysis failed:', error.message);
+    return res.status(status).json({ error: status === 502 ? 'AI analysis provider failed or timed out' : error.message });
+  }
 });
-
-// Get all reviews route
 router.get('/', authenticate, reviewController.getReviews);
-
 module.exports = router;

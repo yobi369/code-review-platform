@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+!.env.example
+coverage/
+.nyc_output/
+.DS_Store
+npm-debug.log*
+*.log
+
+# Local database exports and migration backups
+backups/

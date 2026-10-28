@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10151d">
+  <meta name="description" content="Review code, organize findings, and get AI-assisted feedback in one focused workspace.">
+  <title>Code Review Platform</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Code Review Platform home"><span class="brand-mark" aria-hidden="true">CR</span><span>Review<span class="brand-muted">Forge</span></span></a>
+    <div class="topbar-right"><span class="status-dot" aria-hidden="true"></span><span class="topbar-label">Developer workspace</span><a class="subtle-link" href="/health" target="_blank" rel="noreferrer">System status ↗</a></div>
+  </header>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow"><span class="eyebrow-line"></span> CODE QUALITY, WITH CLARITY</div>
+      <h1>Ship better code.<br><span class="headline-accent">With fewer blind spots.</span></h1>
+      <p class="hero-copy">A focused workspace for review sessions and AI-assisted feedback. Keep your reviews organized, catch risks early, and stay in control of every change.</p>
+      <div class="hero-points"><span>✓ Private review history</span><span>✓ Actionable AI feedback</span><span>✓ Human-led decisions</span></div>
+    </section>
+
+    <section id="auth-panel" class="panel auth-panel" aria-labelledby="auth-title">
+      <div class="panel-heading">
+        <div><p class="kicker">YOUR WORKSPACE</p><h2 id="auth-title">Welcome back</h2><p class="muted" id="auth-subtitle">Sign in to continue your reviews.</p></div>
+        <div class="panel-icon" aria-hidden="true">↗</div>
+      </div>
+      <div class="auth-tabs" role="group" aria-label="Account action">
+        <button class="tab active" id="show-login" type="button">Sign in</button>
+        <button class="tab" id="show-register" type="button">Create account</button>
+      </div>
+      <form id="login-form" class="form-stack">
+        <label for="login-username">Username</label><input id="login-username" name="username" autocomplete="username" minlength="3" maxlength="80" required>
+        <label for="login-password">Password</label><input id="login-password" name="password" type="password" autocomplete="current-password" required>
+        <button class="button primary full" type="submit">Sign in <span aria-hidden="true">→</span></button>
+      </form>
+      <form id="register-form" class="form-stack hidden">
+        <label for="register-username">Choose a username</label><input id="register-username" name="username" autocomplete="username" minlength="3" maxlength="80" required>
+        <label for="register-password">Create a password</label><input id="register-password" name="password" type="password" autocomplete="new-password" minlength="12" maxlength="256" required aria-describedby="password-help">
+        <p class="field-help" id="password-help">Use at least 12 characters. Choose a unique password.</p>
+        <button class="button primary full" type="submit">Create account <span aria-hidden="true">→</span></button>
+      </form>
+      <p id="auth-message" class="message" role="status" aria-live="polite"></p>
+      <p class="fine-print">Your workspace is protected by account authentication. Never submit credentials, API keys, or other secrets as code.</p>
+    </section>
+
+    <section id="workspace" class="workspace hidden" aria-labelledby="workspace-title">
+      <div class="workspace-heading">
+        <div><p class="kicker">REVIEW WORKSPACE</p><h2 id="workspace-title">Your review desk</h2><p class="muted">Create review sessions and analyze code when you're ready.</p></div>
+        <button id="logout-button" class="button secondary" type="button">Sign out</button>
+      </div>
+      <div class="workspace-grid">
+        <section class="panel" aria-labelledby="new-review-title">
+          <div class="panel-heading"><div><p class="kicker">01 / ORGANIZE</p><h3 id="new-review-title">New review session</h3></div><span class="section-number">01</span></div>
+          <form id="review-form" class="form-stack">
+            <label for="review-title">Review title</label><input id="review-title" name="title" maxlength="160" placeholder="e.g. Authentication refactor" required>
+            <label for="review-description">Context and goals</label><textarea id="review-description" name="description" maxlength="10000" rows="4" placeholder="What changed? What should the reviewer pay attention to?" required></textarea>
+            <button class="button primary full" type="submit">Create review <span aria-hidden="true">→</span></button>
+          </form>
+        </section>
+        <section class="panel" aria-labelledby="ai-review-title">
+          <div class="panel-heading"><div><p class="kicker">02 / INSPECT</p><h3 id="ai-review-title">AI code review</h3></div><span class="section-number">02</span></div>
+          <form id="ai-form" class="form-stack">
+            <label for="code-input">Source code</label><textarea id="code-input" name="code" maxlength="20000" rows="8" spellcheck="false" placeholder="Paste a small, non-sensitive code snippet…" required aria-describedby="code-help code-count"></textarea>
+            <div class="field-row"><p class="field-help" id="code-help">Up to 20,000 characters. Do not include secrets or private customer data. <a href="/privacy.html" target="_blank" rel="noreferrer">Read AI privacy details</a>.</p><span id="code-count" class="counter">0 / 20000</span></div>
+            <button class="button primary full" type="submit">Analyze code <span aria-hidden="true">✳</span></button>
+          </form>
+          <div id="ai-result" class="result-box hidden" aria-live="polite"><div class="result-heading"><span class="result-dot"></span><strong>Review feedback</strong></div><div id="ai-result-content" class="ai-findings"></div><p class="field-help">AI findings can be incorrect or incomplete. Validate every suggestion before applying it.</p></div>
+        </section>
+      </div>
+      <section class="panel review-history" aria-labelledby="history-title">
+        <div class="panel-heading"><div><p class="kicker">03 / TRACK</p><h3 id="history-title">Recent review sessions</h3><p class="muted">Only sessions belonging to your account are shown.</p></div><button id="refresh-reviews" class="button secondary" type="button">Refresh ↻</button></div>
+        <div id="review-list" class="review-list"><p class="empty-state">Sign in to load your review history.</p></div>
+      </section>
+      <section id="collab-panel" class="panel collab-panel hidden" aria-labelledby="collab-review-title">
+        <div class="panel-heading"><div><p class="kicker">04 / COLLABORATE</p><h3 id="collab-review-title">Live review room</h3><p id="collab-status" class="muted" role="status">Not connected</p></div><button id="close-collab" class="button secondary" type="button">Close room</button></div>
+        <form id="invite-form" class="invite-form"><label for="invite-username">Invite a collaborator by username</label><div class="invite-row"><input id="invite-username" name="username" minlength="3" maxlength="80" placeholder="Existing account username" required><button class="button secondary" type="submit">Invite</button></div><p class="field-help">Only the review owner can invite accounts. Invited collaborators can view this review and join its live discussion.</p></form>
+        <form id="remove-collaborator-form" class="invite-form"><label for="remove-username">Revoke collaborator access</label><div class="invite-row"><input id="remove-username" name="username" minlength="3" maxlength="80" placeholder="Username to remove" required><button class="button secondary" type="submit">Revoke access</button></div><p class="field-help">Only the review owner can revoke access. The collaborator will lose access to this review room.</p></form>
+        <div id="comment-list" class="comment-list" role="log" aria-live="polite" aria-relevant="additions text"><p class="empty-state">Open a review room to load its comments.</p></div>
+        <form id="comment-form" class="comment-form"><label for="comment-input">Add a comment</label><textarea id="comment-input" maxlength="2000" rows="2" placeholder="Share a finding or ask a question…" required></textarea><div class="field-row"><p class="field-help">Comments are shared with authenticated members who can access this review.</p><button id="send-comment" class="button primary" type="submit" disabled>Send comment →</button></div></form>
+      </section>
+      <p id="workspace-message" class="message" role="status" aria-live="polite"></p>
+    </section>
+    <footer class="page-footer"><span>REVIEWFORGE · CODE REVIEW PLATFORM</span><span>AI-assisted, human-approved.</span></footer>
+  </main>
+</body>
+</html>

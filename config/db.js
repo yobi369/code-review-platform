@@ -1,16 +1,14 @@
+'use strict';
 const mongoose = require('mongoose');
 
-const connectDB = async () => {
-    try {
-        await mongoose.connect(process.env.DATABASE_URL, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
-        console.log('MongoDB connected');
-    } catch (error) {
-        console.error('MongoDB connection error:', error);
-        process.exit(1);
-    }
-};
-
+async function connectDB() {
+  const uri = process.env.DATABASE_URL;
+  if (!uri) throw new Error('DATABASE_URL must be configured before the service can start');
+  await mongoose.connect(uri, {
+    serverSelectionTimeoutMS: 10000,
+    maxPoolSize: 10,
+    minPoolSize: 0
+  });
+  console.log('MongoDB connected');
+}
 module.exports = connectDB;

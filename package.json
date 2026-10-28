@@ -1,23 +1,31 @@
 {
   "name": "code-review-platform",
   "version": "1.0.0",
-  "description": "Real-Time Collaborative AI-Powered Code Review Platform",
+  "description": "AI-assisted code review platform built with Node.js, Express and MongoDB",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "check": "node --check app.js && node --check controllers/auth.js && node --check controllers/review.js && node --check middleware/auth.js && node --check middleware/rateLimit.js && node --check routes/auth.js && node --check routes/review.js && node --check services/ai.js && node --check services/websocket.js && node --check config/db.js && node --check public/js/app.js && node --check integration/run.js && node --check scripts/migrate-legacy-reviews.js",
+    "test": "node --test",
+    "audit": "npm audit --audit-level=high",
+    "check:security": "npm audit --audit-level=high",
+    "test:integration": "node integration/run.js"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   },
   "dependencies": {
-    "dotenv": "^8.2.0",
-    "ejs": "^3.1.6",
-    "express": "^4.17.1",
+    "dotenv": "^17.2.3",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^5.10.9",
-    "axios": "^0.21.1"
+    "mongoose": "^9.11.4",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
-    "nodemon": "^2.0.4"
+    "nodemon": "^3.1.11"
   },
-  "author": "Your Name",
+  "author": "Brian Mutunga",
   "license": "ISC"
 }
