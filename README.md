@@ -60,7 +60,7 @@ Open `http://127.0.0.1:3001`. Compose stores local MongoDB data in a named volum
 | `OPENAI_API_KEY` | No | Enables AI analysis |
 | `OPENAI_MODEL` | No | Provider model, defaults to `gpt-4.1-mini` |
 
-Never commit real environment files or use example secrets in a deployed environment. Do not send proprietary code to an external AI provider unless you are authorized to do so.
+Never commit real environment files or use example secrets in a deployed environment. Review [AI source-code privacy and processing](docs/AI-PRIVACY.md) before enabling analysis. The AI endpoint returns schema-validated JSON findings; do not send proprietary code to an external provider unless you are authorized to do so.
 
 ## Validation
 
