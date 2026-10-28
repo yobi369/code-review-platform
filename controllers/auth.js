@@ -54,7 +54,12 @@ exports.login = async (req, res) => {
   }
   try {
     const user = await User.findOne({ username }).select('+password');
-    if (!user || !(await verifyPassword(password, user.password))) return res.status(401).json({ error: 'Invalid credentials' });
+    if (!user) {
+      // Perform comparable password-hash work for unknown usernames to reduce timing-based account enumeration.
+      await scrypt(password, 'reviewforge-login-timing-salt', PASSWORD_BYTES);
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    if (!(await verifyPassword(password, user.password))) return res.status(401).json({ error: 'Invalid credentials' });
     // Upgrade a legacy plaintext password immediately after a successful login.
     if (!user.password.startsWith('scrypt$')) {
       user.password = await hashPassword(password);
